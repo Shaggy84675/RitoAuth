@@ -1,0 +1,28 @@
+{
+    "name": "weedeej/authspace",
+    "description": "Wrapper for Valorant Client Auth",
+    "type": "library",
+    "require": {
+        "php": ">=7.4",
+        "guzzlehttp/guzzle": "^7.3"
+    },
+    "require-dev": {
+        "php": ">=7.4",
+        "guzzlehttp/guzzle": "^7.3"
+    },
+    "autoload": {
+        "psr-4": {"Weedeej\\AuthSpace\\": "src/"}
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Weedeej\\Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "stable",
+    "authors": [
+        {
+            "name": "weedeej",
+            "email": "devildjoseph666@gmail.com"
+        }
+    ]
+}
