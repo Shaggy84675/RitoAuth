@@ -3,7 +3,7 @@ A php wrapper for authenticating user for Valorant Client APIs
 
 ## How to install
 ```
-composer require weedeej/authspace
+composer require weedeej/authspace:dev-master
 ```
 
 ## Usage
