@@ -2,6 +2,7 @@
     "name": "weedeej/authspace",
     "description": "Wrapper for Valorant Client Auth",
     "type": "library",
+    "license":"MIT",
     "require": {
         "php": ">=7.4",
         "guzzlehttp/guzzle": "^7.3"
