@@ -13,11 +13,17 @@ class Authentication {
     private $shard;
     public $accessToken;
 
-    public function __construct(String $username, String $password, String $shard){
+    public function __construct(Array $credentials){
         $this->client = new Client(array('cookies' => true,'http_errors' => false));
-        $this->username = $username;
-        $this->password = $password;
-        $this->shard = $shard;
+        if(!isset($credentials["password"])){
+            $this->accessToken = $credentials["username"];
+            $this->shard = $credentials["shard"];
+        }else{
+            $this->username = $$credentials["username"];
+            $this->password = $credentials["password"];
+            $this->shard = $credentials["shard"];
+        }
+        
     }
     public function collectCookies(){
         $jar = new CookieJar();
@@ -38,7 +44,7 @@ class Authentication {
             return json_decode((string) $response->getBody());
         }else{
             $this->accessToken = $utils->getBetween("access_token=","&scope",(string)$response->getBody());
-            return $session;
+            return $this->accessToken;
         }
     }
 
@@ -63,6 +69,16 @@ class Authentication {
 
         return array("accessToken"=>$this->accessToken,
                      "entitlements_token"=>$entitlement,
+                     "shard"=>$this->shard);
+    }
+
+    public function authByToken(){
+        $response = $this->getEntitlements($this->accessToken);
+        if($response == null){
+            return "{\"error\":\"You entered an expired or invalid token.\"}";
+        }
+        return array("accessToken"=>$this->accessToken,
+                     "entitlements_token"=>$response,
                      "shard"=>$this->shard);
     }
 }
