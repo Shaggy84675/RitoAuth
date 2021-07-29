@@ -27,6 +27,8 @@ $authObject = new Authentication(["username"=>"token.fetched.from.my.other.repo"
 $authTokens = $authObject->authByToken();//If password is defined, 
 					 //this will return an error.
 ```
+To get the token required, There so many ways to get it. But I recommend my project
+[VTACCESS](https://github.com/weedeej/val-token-fetcher) as it copies that token instead of being displayed.
 # License
 MIT
 

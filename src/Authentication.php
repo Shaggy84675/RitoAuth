@@ -19,7 +19,7 @@ class Authentication {
             $this->accessToken = $credentials["username"];
             $this->shard = $credentials["shard"];
         }else{
-            $this->username = $$credentials["username"];
+            $this->username = $credentials["username"];
             $this->password = $credentials["password"];
             $this->shard = $credentials["shard"];
         }
