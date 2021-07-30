@@ -65,7 +65,7 @@ class Authentication {
         $session = $this->collectCookies();
         $utils = new Utils();
 
-        $postData = json_decode('{"type":"auth", "username":"'.$this->username.'", "password":"'.$this->password.'", "remember":'.$this->remember.'}');
+        $postData = json_decode('{"type":"auth", "username":"'.$this->username.'", "password":"'.$this->password.'", "remember":'.json_encode($this->remember).'}');
         $response = $this->client->request("PUT","https://auth.riotgames.com/api/v1/authorization",["json"=>$postData,
                                                                                               "cookies"=>$session]);
         if($this->remember){
