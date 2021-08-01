@@ -38,8 +38,8 @@ class TestAuth {
 
     NOTE: "remember" should be set on true*/
     public function rememberMe(){
-        $authObject = new Authentication(self::tokenmethod);
-        $authTokens = $authObj->authByToken();
+        $authObject = new Authentication(self::remember);
+        $authTokens = $authObj->authByUsername();
         return $authTokens;
     }
 

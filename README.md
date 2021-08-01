@@ -33,9 +33,14 @@ Remembering Cookies
 /*Remembering Cookies not credentials for Re-auth
 
 NOTE: "remember" should be set on true*/
+const remember = ["username"=>"myUsername69",
+                  "password"=>"s3cuReP4ss420",
+                  "shard"=>"ap",
+                  "remember"=>true];
+
 public function rememberMe(){
-    $authObject = new Authentication(self::tokenmethod);
-    $authTokens = $authObj->authByToken();
+    $authObject = new Authentication(self::remember);
+    $authTokens = $authObj->authByUsername();
     return $authTokens;
 }
 
