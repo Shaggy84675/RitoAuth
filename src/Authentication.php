@@ -13,6 +13,7 @@ class Authentication {
     private $shard;
     private $remember;
     public $accessToken;
+    private $ssid;
 
     public function __construct(Array $credentials = null){
         $this->client = new Client(array('cookies' => true,'http_errors' => false));
@@ -71,6 +72,7 @@ class Authentication {
         if($this->remember){
             setcookie("ssid",$session->getCookieByName("ssid")->getValue(),$session->getCookieByName("ssid")->getExpires(), "/");
             setcookie("shard",$this->shard,$session->getCookieByName("ssid")->getExpires(), "/");
+            $this->ssid = $session->getCookieByName("ssid")->getValue();
         }
         if(isset(json_decode((string) $response->getBody(),true)["error"])){
             return json_decode((string) $response->getBody());
@@ -98,10 +100,13 @@ class Authentication {
             
         }
         $entitlement = $this->getEntitlements($this->accessToken);
-
-        return array("accessToken"=>$this->accessToken,
+        $returnArr = array("accessToken"=>$this->accessToken,
                      "entitlements_token"=>$entitlement,
                      "shard"=>$this->shard);
+        if(isset($this->ssid)){
+            $returnArr["ssid"] = $this->ssid;
+        }
+        return $returnArr;
     }
 
     public function authByToken(){
