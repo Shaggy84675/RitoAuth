@@ -14,6 +14,8 @@ class Authentication {
     private $remember;
     public $accessToken;
     private $ssid;
+    private $clid;
+    private $csid;
 
     public function __construct(Array $credentials = null){
         $this->client = new Client(array('cookies' => true,'http_errors' => false));
@@ -70,9 +72,13 @@ class Authentication {
         $response = $this->client->request("PUT","https://auth.riotgames.com/api/v1/authorization",["json"=>$postData,
                                                                                               "cookies"=>$session]);
         if($this->remember){
+            setcookie("csid",$session->getCookieByName("csid")->getValue(),$session->getCookieByName("csid")->getExpires(), "/");
+            setcookie("clid",$session->getCookieByName("clid")->getValue(),$session->getCookieByName("clid")->getExpires(), "/");
             setcookie("ssid",$session->getCookieByName("ssid")->getValue(),$session->getCookieByName("ssid")->getExpires(), "/");
             setcookie("shard",$this->shard,$session->getCookieByName("ssid")->getExpires(), "/");
             $this->ssid = $session->getCookieByName("ssid")->getValue();
+            $this->csid = $session->getCookieByName("csid")->getValue();
+            $this->clid = $session->getCookieByName("clid")->getValue();
         }
         if(isset(json_decode((string) $response->getBody(),true)["error"])){
             return json_decode((string) $response->getBody());
@@ -105,6 +111,8 @@ class Authentication {
                      "shard"=>$this->shard);
         if(isset($this->ssid)){
             $returnArr["ssid"] = $this->ssid;
+            $returnArr["csid"] = $this->csid;
+            $returnArr["clid"] = $this->clid;
         }
         return $returnArr;
     }
