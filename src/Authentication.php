@@ -2,7 +2,6 @@
 namespace Weedeej\AuthSpace;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
-use GuzzleHttp\Exception\ClientException;
 
 use Weedeej\AuthSpace\Utils;
 
@@ -29,9 +28,7 @@ class Authentication {
                 $this->shard = $credentials["shard"];
                 $this->remember = false;
                 if(isset($credentials["remember"])){
-                    if($credentials["remember"] == true){
-                        $this->remember = true;
-                    }
+                    if($credentials["remember"] == true) $this->remember = true;
                 }
             }
         }
@@ -39,27 +36,26 @@ class Authentication {
     }
 
     public function reAuth(){
-        if(isset($_COOKIE["ssid"]) && isset($_COOKIE["shard"])){
-            $utils = new Utils();
-            $reauth = CookieJar::fromArray([
-                'ssid' => $_COOKIE["ssid"]
-            ], 'auth.riotgames.com');
+        if (!isset($_COOKIE["ssid"]) || !isset($_COOKIE["shard"])) return;
+        $utils = new Utils();
+        $reauth = CookieJar::fromArray([
+            'ssid' => $_COOKIE["ssid"]
+        ], 'auth.riotgames.com');
 
-            $authResponse = $this->client->request("GET","https://auth.riotgames.com/authorize?redirect_uri=https%3A%2F%2Fplayvalorant.com%2Fopt_in&client_id=play-valorant-web-prod&response_type=token%20id_token", ["cookies"=>$reauth, "allow_redirects"=>false]);
-            $location = $authResponse->getHeader("location")[0];
-            $this->accessToken = $utils->getBetween("access_token=","&scope",$location);
-            $entitlement = $this->getEntitlements($this->accessToken);
+        $authResponse = $this->client->request("GET","https://auth.riotgames.com/authorize?redirect_uri=https%3A%2F%2Fplayvalorant.com%2Fopt_in&client_id=play-valorant-web-prod&response_type=token%20id_token", ["cookies"=>$reauth, "allow_redirects"=>false]);
+        $location = $authResponse->getHeader("location")[0];
+        $this->accessToken = $utils->getBetween("access_token=","&scope",$location);
+        $entitlement = $this->getEntitlements($this->accessToken);
 
-            return array("accessToken"=>$this->accessToken,
-                        "entitlements_token"=>$entitlement,
-                        "shard"=>$_COOKIE["shard"]);
-        }
+        return array("accessToken"=>$this->accessToken,
+                    "entitlements_token"=>$entitlement,
+                    "shard"=>$_COOKIE["shard"]);
     }
 
     public function collectCookies(){
         $jar = new CookieJar();
         $postData = json_decode('{"client_id": "play-valorant-web-prod","nonce": "1","redirect_uri": "https://playvalorant.com/opt_in","response_type": "token id_token"}');
-        $response = $this->client->request("POST", "https://auth.riotgames.com/api/v1/authorization", ["json"=>$postData,
+        $this->client->request("POST", "https://auth.riotgames.com/api/v1/authorization", ["json"=>$postData,
                                                                                                  "cookies"=>$jar]);
         return $jar;
     }
@@ -80,12 +76,10 @@ class Authentication {
             $this->csid = $session->getCookieByName("csid")->getValue();
             $this->clid = $session->getCookieByName("clid")->getValue();
         }
-        if(isset(json_decode((string) $response->getBody(),true)["error"])){
-            return json_decode((string) $response->getBody());
-        }else{
-            $this->accessToken = $utils->getBetween("access_token=","&scope",(string)$response->getBody());
-            return $this->accessToken;
-        }
+        if(isset(json_decode((string) $response->getBody(),true)["error"])) return json_decode((string) $response->getBody());
+
+        $this->accessToken = $utils->getBetween("access_token=","&scope",(string)$response->getBody());
+        return $this->accessToken;
     }
 
     public function getEntitlements(String $accessToken){
@@ -96,14 +90,11 @@ class Authentication {
     }
     
     public function authByUsername(){
-        $session = $this->collectCookies();
+        $this->collectCookies();
         $authSession = $this->authUser();
         if(isset($authSession->error)){
-            if($authSession->error == "auth_failure"){
-                return "{\"error\":\"Invalid username or password\"}";
-            }
+            if($authSession->error == "auth_failure") return "{\"error\":\"Invalid username or password\"}";
             return "{\"error\":\"".$authSession->error."\"}";
-            
         }
         $entitlement = $this->getEntitlements($this->accessToken);
         $returnArr = array("accessToken"=>$this->accessToken,
@@ -119,9 +110,7 @@ class Authentication {
 
     public function authByToken(){
         $response = $this->getEntitlements($this->accessToken);
-        if($response == null){
-            return "{\"error\":\"You entered an expired or invalid token.\"}";
-        }
+        if($response == null) return "{\"error\":\"You entered an expired or invalid token.\"}";
         return array("accessToken"=>$this->accessToken,
                      "entitlements_token"=>$response,
                      "shard"=>$this->shard);
