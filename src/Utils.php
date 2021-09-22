@@ -23,11 +23,8 @@ class Utils {
     }
 
     public function ezDec($obj){
-        if(gettype($obj) == "string"){
-            return json_decode($obj);
-        }elseif(gettype($obj) == "array"){
-            return json_encode($obj, JSON_FORCE_OBJECT);
-        }
+        if(gettype($obj) == "string") return json_decode($obj);
+        if(gettype($obj) == "array") return json_encode($obj, JSON_FORCE_OBJECT);
     }
 
 }

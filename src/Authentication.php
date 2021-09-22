@@ -42,7 +42,7 @@ class Authentication {
             'ssid' => $_COOKIE["ssid"]
         ], 'auth.riotgames.com');
 
-        $authResponse = $this->client->request("GET","https://auth.riotgames.com/authorize?redirect_uri=https%3A%2F%2Fplayvalorant.com%2Fopt_in&client_id=play-valorant-web-prod&response_type=token%20id_token", ["cookies"=>$reauth, "allow_redirects"=>false]);
+        $authResponse = $this->client->request("GET","https://auth.riotgames.com/authorize?redirect_uri=https%3A%2F%2Fplayvalorant.com%2Fopt_in&client_id=play-valorant-web-prod&response_type=token%20id_token&nonce=1", ["cookies"=>$reauth, "allow_redirects"=>false]);
         $location = $authResponse->getHeader("location")[0];
         $this->accessToken = $utils->getBetween("access_token=","&scope",$location);
         $entitlement = $this->getEntitlements($this->accessToken);
