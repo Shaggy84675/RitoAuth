@@ -9,8 +9,8 @@ class Authentication {
     private $client;
     private $username;
     private $password;
-    private $shard;
-    private $remember;
+    public $shard;
+    public $remember;
     public $accessToken;
     private $ssid;
     private $clid;
@@ -67,6 +67,13 @@ class Authentication {
         $postData = json_decode('{"type":"auth", "username":"'.$this->username.'", "password":"'.$this->password.'", "remember":'.json_encode($this->remember).'}');
         $response = $this->client->request("PUT","https://auth.riotgames.com/api/v1/authorization",["json"=>$postData,
                                                                                               "cookies"=>$session]);
+                                                                                              
+        if (json_decode((string)$response->getBody())->type == "multifactor")
+        {
+            setcookie("asid",$session->getCookieByName("asid")->getValue(),$session->getCookieByName("asid")->getExpires(), "/");
+
+            return "2FA";
+        } //2FA Update Try MFA
         if($this->remember){
             setcookie("csid",$session->getCookieByName("csid")->getValue(),$session->getCookieByName("csid")->getExpires(), "/");
             setcookie("clid",$session->getCookieByName("clid")->getValue(),$session->getCookieByName("clid")->getExpires(), "/");
@@ -77,11 +84,32 @@ class Authentication {
             $this->clid = $session->getCookieByName("clid")->getValue();
         }
         if(isset(json_decode((string) $response->getBody(),true)["error"])) return json_decode((string) $response->getBody());
-
+        
         $this->accessToken = $utils->getBetween("access_token=","&scope",(string)$response->getBody());
         return $this->accessToken;
     }
-
+    public function start2FA($code)
+    {
+        $cookieJar = CookieJar::fromArray([
+            'asid' => $_COOKIE['asid']
+        ], 'auth.riotgames.com');
+        $utils = new Utils();
+        $putData = json_decode('{"type":"multifactor", "code":"'.$code.'", "rememberDevice":true}');
+        $mfaResponse = $this->client->request("PUT","https://auth.riotgames.com/api/v1/authorization",["json"=>$putData,
+                                                                                              "cookies"=>$cookieJar]);
+        if(isset(json_decode((string) $mfaResponse->getBody(),true)["error"])) return json_decode((string) $mfaResponse->getBody());
+        if($this->remember){
+            setcookie("csid",$cookieJar->getCookieByName("csid")->getValue(),$cookieJar->getCookieByName("csid")->getExpires(), "/");
+            setcookie("clid",$cookieJar->getCookieByName("clid")->getValue(),$cookieJar->getCookieByName("clid")->getExpires(), "/");
+            setcookie("ssid",$cookieJar->getCookieByName("ssid")->getValue(),$cookieJar->getCookieByName("ssid")->getExpires(), "/");
+            setcookie("shard",$this->shard,$cookieJar->getCookieByName("ssid")->getExpires(), "/");
+            $this->ssid = $cookieJar->getCookieByName("ssid")->getValue();
+            $this->csid = $cookieJar->getCookieByName("csid")->getValue();
+            $this->clid = $cookieJar->getCookieByName("clid")->getValue();
+        }
+        $this->accessToken = $utils->getBetween("access_token=","&scope",(string)$mfaResponse->getBody());
+        return $this->accessToken;
+    }
     public function getEntitlements(String $accessToken){
         $postData = json_decode('{}');
         $response = $this->client->request("POST","https://entitlements.auth.riotgames.com/api/token/v1",["json"=>$postData,
@@ -89,9 +117,16 @@ class Authentication {
         return json_decode((string)$response->getBody())->entitlements_token;
     }
     
-    public function authByUsername(){
+    public function authByUsername($mfa = false, $code = 0){
         $this->collectCookies();
-        $authSession = $this->authUser();
+        if (!$mfa)
+        {
+            $authSession = $this->authUser();
+            if ($authSession == "2FA") return "2FA";
+        }else
+        {
+            $authSession = $this->start2FA($code);
+        }
         if(isset($authSession->error)){
             if($authSession->error == "auth_failure") return "{\"error\":\"Invalid username or password\"}";
             return "{\"error\":\"".$authSession->error."\"}";
@@ -115,5 +150,12 @@ class Authentication {
                      "entitlements_token"=>$response,
                      "shard"=>$this->shard);
     }
+
+    /**
+     * I might not be able to clean this in the future 
+     * as this project turned out to be a personal use.
+     * If you want to clean this project, you can fork it and open a PR.
+     * I might get the motivation I need that way.
+     */
 }
 ?>
