@@ -16,12 +16,12 @@ class Authentication {
     private $clid;
     private $csid;
     private $headers;
-    private $address
+    private $address;
 
     public function __construct(Array $credentials = null){
         $this->client = new Client(array('cookies' => true,'http_errors' => false, 'verify'=>false));
         $this->headers = ["Accept-Encoding" => "gzip, deflate, br", "Host" => "auth.riotgames.com", "User-Agent"=>"RiotClient/43.0.1.4195386.4190634 rso-auth (Windows;10;;Professional, x64)"];
-        $this->$address = $this->getAddr();
+        $this->address = $this->getAddr();
         if($credentials != null){
             if(!isset($credentials["password"])){
                 $this->accessToken = $credentials["username"];
@@ -63,8 +63,9 @@ class Authentication {
 
     public function collectCookies(){
         $jar = new CookieJar();
+        $addr = $this->address;
         $postData = json_decode('{"client_id": "play-valorant-web-prod","nonce": "1","redirect_uri": "https://playvalorant.com/opt_in","response_type": "token id_token"}');
-        $this->client->request("POST", "https://${this->$address}/api/v1/authorization", ["json"=>$postData,
+        $this->client->request("POST", "https://${addr}/api/v1/authorization", ["json"=>$postData,
                                                                                                  "cookies"=>$jar, "headers"=>$this->headers]);
         return $jar;
     }
@@ -72,9 +73,10 @@ class Authentication {
     public function authUser(){
         $session = $this->collectCookies();
         $utils = new Utils();
+        $addr = $this->address;
 
         $postData = json_decode('{"type":"auth", "username":"'.$this->username.'", "password":"'.$this->password.'", "remember":'.json_encode($this->remember).'}');
-        $response = $this->client->request("PUT","https://${this->$address}/api/v1/authorization",["json"=>$postData,
+        $response = $this->client->request("PUT","https://${addr}/api/v1/authorization",["json"=>$postData,
                                                                                               "cookies"=>$session, "headers"=>$this->headers]);
                                                                                               
         if (json_decode((string)$response->getBody())->type == "multifactor")
@@ -103,8 +105,9 @@ class Authentication {
             'asid' => $_COOKIE['asid']
         ], 'auth.riotgames.com');
         $utils = new Utils();
+        $addr = $this->address;
         $putData = json_decode('{"type":"multifactor", "code":"'.$code.'", "rememberDevice":true}');
-        $mfaResponse = $this->client->request("PUT","https://${this->$address}/api/v1/authorization",["json"=>$putData,
+        $mfaResponse = $this->client->request("PUT","https://${addr}/api/v1/authorization",["json"=>$putData,
                                                                                               "cookies"=>$cookieJar, "headers"=>$this->headers]);
         if(isset(json_decode((string) $mfaResponse->getBody(),true)["error"])) return json_decode((string) $mfaResponse->getBody());
         if($this->remember){
