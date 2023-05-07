@@ -126,7 +126,6 @@ class RiotAuth {
         $response = $this->client->request("PUT","https://".$this->address."/api/v1/authorization", ["json" => $postData, "cookies" => $session, "headers" => $this->headers]);
         $authResponse = Utils::ParseAuthResponse($response);
 
-
         if (isset($authResponse->error)) {
             switch ($authResponse->error) {
                 case 'auth_failure':
@@ -163,8 +162,6 @@ class RiotAuth {
 
         $this->response = $authResponse;
         $this->accessToken = $authResponse->access_token ?? null;
-        $this->idToken = $authResponse->id_token ?? null;
-        $this->tokenExpiration = $authResponse->expires_in;
 
         $this->ssid = $session->getCookieByName("ssid")->getValue();
         $this->csid = $session->getCookieByName("csid")->getValue();
@@ -204,7 +201,8 @@ class RiotAuth {
     private function getEntitlements(String $accessToken) {
         $postData = json_decode('{}');
         $response = $this->client->request("POST","https://entitlements.auth.riotgames.com/api/token/v1", ["json" => $postData, "headers" => ["Authorization"=>"Bearer ".$accessToken]]);
-        return json_decode((string)$response->getBody())->entitlements_token;
+        $this->entitlements = json_decode((string)$response->getBody())->entitlements_token;
+        return $this->entitlements;
     }
 
     public function authenticate(bool $useSessions = true): bool {
@@ -216,11 +214,11 @@ class RiotAuth {
 
         //If the token is still valid, there's no point to generate a new one.
         if (isset($_SESSION["token_expiration"]) && $_SESSION["token_expiration"] > $curDate) {
-            $this->response = $_SESSION;
-            $this->accessToken = $this->response["access_token"];
-            $this->tokenExpiration = $this->response["token_expiration"];
-            $this->entitlements = $this->response["entitlements"];
-            dump($_SESSION);
+            $this->response = (object) $_SESSION;
+            $this->accessToken = $this->response->access_token;
+            $this->tokenExpiration = $this->response->token_expiration;
+            $this->entitlements = $this->response->entitlements;
+            //dump($this->response);
             return true;
         }
         
@@ -233,7 +231,8 @@ class RiotAuth {
 
         $this->tokenExpiration = $curDate->add(new DateInterval("PT".$this->response->expires_in."S"));
         
-        $this->entitlements = $this->getEntitlements($this->accessToken);
+        $this->getEntitlements($this->accessToken);
+
         $returnArr = array("access_token"       => $this->accessToken,
                            "token_expiration"   => $this->tokenExpiration,
                            "entitlements"       => $this->entitlements);
