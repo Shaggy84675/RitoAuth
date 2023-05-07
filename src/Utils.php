@@ -1,25 +1,42 @@
 <?php
-namespace Weedeej\AuthSpace;
-class Utils {
-    public const jsonPath = ["version" => __DIR__ . "/json/version.json",
-                             "buddies" => __DIR__ . "/json/buddies.json",
-                             "bundles" => __DIR__ . "/json/bundles.json",
-                             "competitivetiers" => __DIR__ . "/json/competitivetiers.json",
-                             "maps" => __DIR__ . "/json/maps.json",
-                             "playercards" => __DIR__ . "/json/playercards.json",
-                             "playertitles" => __DIR__ . "/json/playertitles.json",
-                             "seasons" => __DIR__ . "/json/seasons.json",
-                             "contracts" => __DIR__ . "/json/contracts.json",
-                             "skinchromas" => __DIR__ . "/json/skinchromas.json",
-                             "skinlevels" => __DIR__ . "/json/skinlevels.json",
-                             "skins" => __DIR__ . "/json/skins.json",
-                             "sprays" => __DIR__ . "/json/sprays.json",
-                             "weapons" => __DIR__ . "/json/weapons.json",
-                             "agents" => __DIR__ . "/json/agents.json",
-                             "offers" => __DIR__ . "/json/offers.json"];
-                             
+namespace RainbowShaggy\RitoAuth;
+
+use GuzzleHttp\Client;
+use Psr\Http\Message\ResponseInterface;
+
+class Utils {                             
     public function getBetween($start, $end, $str){
         return explode($end,explode($start,$str)[1])[0];
+    }
+
+    public function getRegion(Client $client, String $accessToken){
+        $response = $this->client->request("PUT","https://riot-geo.pas.si.riotgames.com/pas/v1/product/valorant",["json"=>['id_token' => $this->idToken], "headers"=>["Authorization"=>"Bearer $accessToken"]]);
+        $this->shard = json_decode((string)$response->getBody())->affinities->live;
+        return json_decode((string)$response->getBody())->affinities->live;
+    }
+
+    public static function GenerateUrlSafeToken($length) : string {
+        $bytes = random_bytes($length);
+        return rtrim(strtr(base64_encode($bytes), '+/', '-_'), '=');
+    }
+
+    public static function ParseUrlQuery(string $url) : object {
+        parse_str(parse_url($url)["fragment"], $out);
+        return (object) $out;
+    }
+
+    public static function ParseAuthResponse(ResponseInterface $response) : object {
+        $json = json_decode((string)$response->getBody());
+        if (isset($json->error)) {
+            return $json;
+        }
+
+        return (object) Utils::ParseUrlQuery($json->response->parameters->uri);
+    }
+
+    public static function GetVersion(Client $client) : object {
+        $response = $client->get('https://valorant-api.com/v1/version');
+        return json_decode($response->getBody()->getContents())->data;
     }
 
     public function ezDec($obj){

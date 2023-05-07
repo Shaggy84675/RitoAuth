@@ -1,63 +1,44 @@
-# Valorant Client Wrapper
-A php wrapper for authenticating user for Valorant Client APIs
+# Unofficial VALORANT Authentication Library
+A PHP library to obtain authentication tokens for VALORANT (it probably works for other Riot games too).
+
+This library is still WIP, but it works at some point. If you need help to use it, don't hesitate to open an issue.
 
 ## How to install
 ```
-composer require weedeej/authspace:dev-master
+composer require rainbowshaggy/ritoauth:dev-master
 ```
 
 ## Usage
+I've reworked this library, so it can be used as easy as possible. Here's an example, how to use it.
 
-Auth using username and password
 ```PHP
-use Weedeej\AuthSpace\Authentication;
+use RainbowShaggy\RitoAuth\RiotAuth;
+use RainbowShaggy\RitoAuth\RiotAuthenticationException;
 
-$authObject = new Authentication(["username"=>"myUsername69",
-                       		  "password"=>"s3cuReP4ss420",
-                       		  "shard"=>"ap"]);
-$authTokens = $authObject->authByUsername(); //Password is the most required key here.
-```
+$riotAuth = new RiotAuth(["username" => "RiotUsername",
+                          "password" => "RiotPassword"]);
 
-Auth using Tokens
-```PHP
-use Weedeej\AuthSpace\Authentication;
-
-$authObject = new Authentication(["username"=>"token.fetched.from.my.other.repo",
-                         	  "shard"=>"ap"]); 
-$authTokens = $authObject->authByToken();//If password is defined, 
-					 //this will return an error.
-```
-
-Remembering Cookies
-```PHP
-/*Remembering Cookies not credentials for Re-auth
-
-NOTE: "remember" should be set on true*/
-const remember = ["username"=>"myUsername69",
-                  "password"=>"s3cuReP4ss420",
-                  "shard"=>"ap",
-                  "remember"=>true];
-
-public function rememberMe(){
-    $authObject = new Authentication(self::remember);
-    $authTokens = $authObj->authByUsername();
-    return $authTokens;
-}
-
-/* Parameters on Authentication object should be 'null' */
-public function reAuth(){
-    $authObject = new Authentication();
-    $authTokens = $authObj->reAuth();
-    return $authTokens;
+try {
+    if ($riotAuth->authenticate()) {
+        print $riotAuth->accessToken;
+        print $riotAuth->entitlements;
+        print $riotAuth->tokenExpiration;
+    }
+} catch (RiotAuthenticationException $e) {
+    print $e;
 }
 ```
-To get the token required, There so many ways to get it. But I recommend my project
-[VTACCESS](https://github.com/weedeej/val-token-fetcher) as it copies that token instead of being displayed.
+
+# TODO
+Here are list of things I'd like to finish or improve in the future before 1.0 version. I'm using this library in my other project so I will improve it overtime. If you want to help, feel free to send a PR.
+ - [ ] 2FA authentication
+ - [ ] Tests
+ - [ ] 
+
+# Disclaimer
+This library isn't endorsed or affilated by Riot Games in any way. All associated properties are trademarks or registered trademarks of Riot Games, Inc.
+
+I am also not responsible for any activites and consequences to your Riot account this project will be used for. **Use it at your own risk!**
+
 # License
-MIT
-
-## Disclaimer
-I am not responsible on any illegal activites this project will be used for.
-
-Materials, Endpoints, and any other functions here in this repository are owned by Riot Games
-and there is no way this project is affiliated or endorsed by Riot Games.
+RitoAuth is open-sourced software licensed under the [MIT license](LICENSE).

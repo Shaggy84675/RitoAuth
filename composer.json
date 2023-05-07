@@ -1,29 +1,22 @@
 {
-    "name": "weedeej/authspace",
-    "description": "Wrapper for Valorant Client Auth",
+    "name": "rainbowshaggy/ritoauth",
+    "description": "Library to obtain VALORANT Authentication tokens",
     "type": "library",
     "license":"MIT",
     "require": {
         "php": ">=7.4",
-        "guzzlehttp/guzzle": "^7.3"
+        "guzzlehttp/guzzle": "^7.4"
     },
     "require-dev": {
-        "php": ">=7.4",
-        "guzzlehttp/guzzle": "^7.3"
+        "phpunit/phpunit": "^10.1"
     },
     "autoload": {
-        "psr-4": {"Weedeej\\AuthSpace\\": "src/"}
+        "psr-4": {"RainbowShaggy\\RitoAuth\\": "src/"}
     },
     "autoload-dev": {
         "psr-4": {
-            "Weedeej\\Tests\\": "tests/"
+            "RainbowShaggy\\Tests\\": "tests/"
         }
     },
-    "minimum-stability": "stable",
-    "authors": [
-        {
-            "name": "weedeej",
-            "email": "devildjoseph666@gmail.com"
-        }
-    ]
+    "minimum-stability": "stable"
 }
