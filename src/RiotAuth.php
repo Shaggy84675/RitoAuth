@@ -28,7 +28,8 @@ class RiotAuth {
     private $headers = [
         "Accept-Encoding" => "gzip, deflate, br",
         'Content-Type' => 'application/json',
-        'User-Agent' => 'RiotClient/69.0.3.228.1352 rso-auth (Windows;10;;Professional, x64)',
+        //'User-Agent' => 'RiotClient/69.0.3.228.1352 rso-auth (Windows;10;;Professional, x64)',
+        'User-Agent' => 'ShooterGame/11 Windows/10.0.22621.1.768.64bit',
         'Host' => 'auth.riotgames.com',
         'Accept-Language' => 'en-US,en;q=0.9',
     ];
