@@ -20,9 +20,16 @@ class Utils {
         return rtrim(strtr(base64_encode($bytes), '+/', '-_'), '=');
     }
 
-    public static function ParseUrlQuery(string $url) : object {
-        parse_str(parse_url($url)["fragment"], $out);
-        return (object) $out;
+    public static function ParseUrlQuery(string $url): object {
+        $parsedUrl = parse_url($url);
+    
+        if (isset($parsedUrl['fragment'])) {
+            parse_str($parsedUrl['fragment'], $out);
+            return (object) $out;
+        } else {
+            // Handle the case when there is no fragment part in the URL
+            return (object) array();
+        }
     }
 
     public static function ParseAuthResponse(ResponseInterface $response) : object {
